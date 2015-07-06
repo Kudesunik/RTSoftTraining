@@ -1,13 +1,13 @@
-# LinuxModules
+# RTSoftTraining
 
-Linux kernel module examples
+Linux kernel module examples and other
 
 ### Disclaimer
 This is training project. It is not intended to be used for specific purposes. Project author is not liable for the use of this product.
 
 ### Build 
 
-This is linux kernel modules.
+For linux kernel modules:
 
 1. Enter the directory of the module.
 

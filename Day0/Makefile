@@ -1,7 +1,7 @@
 DIR = /lib/modules/$(shell uname -r)/build
 PWD = $(shell pwd)
 
-TARGET = module1
+TARGET = module
 
 obj-m += $(TARGET).o
 

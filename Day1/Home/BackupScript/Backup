@@ -1,0 +1,19 @@
+#!/bin/bash
+
+dest="../Backup"
+src="./"
+
+except="LocalBackup"
+
+exceptParameter=$@
+
+excludeString="--exclude=$except"
+
+for parameter in $exceptParameter
+do
+	excludeString="$excludeString --exclude=$parameter"
+done
+
+rsync -rv $excludeString $src $dest
+
+
