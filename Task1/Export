@@ -1,0 +1,1 @@
+export PATH=/home/user/ti-processor-sdk-linux-am335x-evm-01.00.00.00/linux-devkit/sysroots/i686-arago-linux/usr/bin:$PATH
