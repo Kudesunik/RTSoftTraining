@@ -1,4 +1,4 @@
-DIR = /home/user/ti-processor-sdk-linux-am335x-evm-01.00.00.00/board-support/linux-3.14.26-g2489c02
+DIR = /home/kunik/Programming/am335x-evm/board-support/linux-3.14.26-g2489c02
 PWD = $(shell pwd)
 
 TARGET = Hi
