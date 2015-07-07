@@ -3,9 +3,10 @@
 #include <linux/kernel.h>
 #include <linux/fs.h>
 #include <linux/cdev.h>
-#include <linux/ioctl.h>
 #include <linux/slab.h>
 #include <asm/uaccess.h>
+
+#include "CharDriverIoctl.h"
 
 MODULE_AUTHOR("Nikita (Kunik) Kuznetsov");
 MODULE_VERSION("1.0.0");
@@ -20,15 +21,14 @@ static int majorNumber;
 
 char *messageBuffer;
 
-int indexIn = 0;
-int indexOut = 0;
+int messageBufferSize = 128;
+int messageBufferMask = 127;
+int indexWrite = 0;
+int indexRead = 0;
 
 static int device_open(struct inode *inode, struct file *file)
 {
 	printk(KERN_ALERT "Device opened!\n");
-
-	messageBuffer = "Test message for userspace program";
-
 	return SUCCESS;
 }
 
@@ -43,13 +43,15 @@ static ssize_t device_read(struct file *filp, char *buffer, size_t length, loff_
 	int bytesRead = 0;
 	printk(KERN_ALERT "Start reading...\n");
 
-	if (*messageBuffer == 0) {
+	if (indexWrite == indexRead) {
 		return 0;
 	}
 
-	while (length && *messageBuffer) {
-		put_user(*(messageBuffer++), buffer++);
+	while (length && (indexWrite != indexRead)) {
+		printk(KERN_INFO "Reading char: %c on index = %d\n", messageBuffer[indexRead], indexRead);
+		put_user(messageBuffer[indexRead++], buffer++);
 		length--;
+		indexRead &= messageBufferMask;
 		bytesRead++;
 	}
 
@@ -59,7 +61,16 @@ static ssize_t device_read(struct file *filp, char *buffer, size_t length, loff_
 static ssize_t device_write(struct file *filp, const char *buffer, size_t length, loff_t *offset)
 {
 	int bytesWrite = 0;
+	int index = length - 1;
 	printk(KERN_ALERT "Start writing...\n");
+
+	while (length > 0) {
+		printk(KERN_INFO "Writing char: %c on index = %d\n", buffer[index], indexWrite);
+		messageBuffer[indexWrite++] = buffer[index--];
+		length--;
+		indexWrite &= messageBufferMask;
+		bytesWrite++;
+	}
 
 	return bytesWrite;
 }
@@ -67,6 +78,18 @@ static ssize_t device_write(struct file *filp, const char *buffer, size_t length
 static long device_unlocked_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 {
 	printk(KERN_INFO "Ioctl message received!\n");
+
+	switch(cmd) {
+		case IOCTL_GET_MSG:
+			printk(KERN_INFO "IOCTL_GET_MSG message received! Arg = %d\n", (int) arg);
+			messageBuffer = kmalloc(((int) arg) * sizeof(char), GFP_KERNEL);
+			messageBufferSize = ((int) arg);
+			messageBufferMask = messageBufferSize - 1;
+			indexWrite = 0;
+			indexRead = 0;
+			break;
+	}
+
 	return SUCCESS;
 }
 
@@ -82,6 +105,8 @@ struct file_operations fops = {
 static int __init device_init(void)
 {
 	printk(KERN_ALERT "Char driver loaded...\n");
+
+	messageBuffer = kmalloc(128 * sizeof(char), GFP_KERNEL);
 
 	majorNumber = register_chrdev(0, deviceName, &fops);
 
@@ -104,4 +129,3 @@ static void __exit device_exit(void)
 
 module_init(device_init);
 module_exit(device_exit);
-
