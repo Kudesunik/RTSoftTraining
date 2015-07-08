@@ -6,3 +6,5 @@ make ARCH=arm CROSS_COMPILE=arm-linux-gnueabi-
 DIR = /lib/modules/$(shell uname -r)/build
 DIR = /home/user/ti-processor-sdk-linux-am335x-evm-01.00.00.00/board-support/linux-3.14.26-g2489c02
 DIR = /home/kunik/Programming/am335x-evm/board-support/linux-3.14.26-g2489c02
+
+ifconfig eth0 192.168.99.19 netmask 255.255.255.0 up
